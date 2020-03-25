@@ -24,8 +24,8 @@ if not os.path.exists(output_dir):
     os.makedirs(output_dir)
     os.makedirs(models_dir)
     os.makedirs(logs_dir)
-log_training = open(logs_dir+'train','a')
-log_validating = open(logs_dir+'val','a')
+log_training = open(logs_dir+'/log_train','a')
+log_validating = open(logs_dir+'/log_val','a')
 log_training.close()
 log_validating.close()
 
@@ -127,8 +127,8 @@ for epoch in range(num_epochs):
         #optimizerD.step()
         optimizerAll.step()
         print(epoch, iters, loss_vec.item())
-        log_training = open(logs_dir+'train','a')
-        log_training.write('{}  {}  {}'.format(epoch, iters, loss_vec.item()))
+        log_training = open(logs_dir+'/log_train','a')
+        log_training.write('{}  {}  {} \n'.format(epoch, iters, loss_vec.item()))
         log_training.close()
         loss_list.append(loss_vec.item())
 
@@ -149,13 +149,13 @@ for epoch in range(num_epochs):
                     output = model(img_gpu).squeeze_(-1)                
                     loss_vec = MSELoss(output, vec_gpu)
                     #print(epoch, iters, loss_vec.item())
-                    log_validating = open(logs_dir+'val','a')
-                    log_validating.write('{}  {}  {}'.format(epoch, iters, loss_vec.item()))
-                    log_validating.close()
+
                     loss_sum += loss_vec.item()
                 ###
                 val_loss = loss_sum / num_val_iter
-
+                log_validating = open(logs_dir+'/log_val','a')
+                log_validating.write('{}  {}  {} \n'.format(epoch, iters, val_loss))
+                log_validating.close()
                 if val_loss < best_val:
                     best_val = val_loss
                     torch.save(model.state_dict(),
