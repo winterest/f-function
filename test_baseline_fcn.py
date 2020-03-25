@@ -14,6 +14,21 @@ import torch.optim as optim
 #import torchvision.utils as vutils
 #import numpy as np
 
+#safely create directory for output
+import os
+from datetime import datetime
+output_dir = './output/filter_functions'+str(datetime.now())[:19]
+models_dir = output_dir+'/models'
+logs_dir = output_dir+'/logs'
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+    os.makedirs(models_dir)
+    os.makedirs(logs_dir)
+log_training = open(logs_dir+'train','a')
+log_validating = open(logs_dir+'val','a')
+log_training.close()
+log_validating.close()
+
 # self defined classes
 from fcn_model import FCNs, VGGNet, weights_init_normal
 from data_loader import get_loader
@@ -112,6 +127,9 @@ for epoch in range(num_epochs):
         #optimizerD.step()
         optimizerAll.step()
         print(epoch, iters, loss_vec.item())
+        log_training = open(logs_dir+'train','a')
+        log_training.write('{}  {}  {}'.format(epoch, iters, loss_vec.item()))
+        log_training.close()
         loss_list.append(loss_vec.item())
 
         if (iters % Val_interval == 999):
@@ -131,6 +149,9 @@ for epoch in range(num_epochs):
                     output = model(img_gpu).squeeze_(-1)                
                     loss_vec = MSELoss(output, vec_gpu)
                     #print(epoch, iters, loss_vec.item())
+                    log_validating = open(logs_dir+'val','a')
+                    log_validating.write('{}  {}  {}'.format(epoch, iters, loss_vec.item()))
+                    log_validating.close()
                     loss_sum += loss_vec.item()
                 ###
                 val_loss = loss_sum / num_val_iter
@@ -138,6 +159,6 @@ for epoch in range(num_epochs):
                 if val_loss < best_val:
                     best_val = val_loss
                     torch.save(model.state_dict(),
-                    './models/fcn_baseline/epoch{}iter{}val{:06.3f}.pth'.format(epoch,iters,val_loss))
+                    models_dir + '/epoch{}iter{}val{:06.3f}.pth'.format(epoch,iters,val_loss))
                     #'./models/'+'epoch'+str(epoch)+'iter'+str(iters)+'val'+str(val_loss)+'.pth')
                 model.train()
