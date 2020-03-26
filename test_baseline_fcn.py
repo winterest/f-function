@@ -43,7 +43,10 @@ def parse_args():
                         default='vgg16', type=str)
     parser.add_argument('--bs', dest='batch_size',
                         help='batch_size',
-                        default=8, type=int)
+                        default=8, type=int)    
+    parser.add_argument('--cu', dest='device',
+                        help='gpu index',
+                        default=0, type=int)
     parser.add_argument('--r', dest='resume',
                         help='resume checkpoint or not',
                         default=False, type=bool)
@@ -56,6 +59,7 @@ def parse_args():
 args = parse_args()
 bs = args.batch_size
 res = args.resume
+cuda_index = args.device
 
 # self defined classes
 from fcn_model import FCNs, VGGNet, weights_init_normal
@@ -63,7 +67,7 @@ from data_loader import get_loader
 
 root_lab = './dataset/ts0126_80k/'
 #root_unlab = PATH_TO_UNLABELED
-cuda_device = "cuda:0"
+cuda_device = "cuda:"+str(cuda_index)
 # Set random seed for reproducibility
 manualSeed = 999
 #manualSeed = random.randint(1, 10000) # use if you want new results
