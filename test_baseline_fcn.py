@@ -29,6 +29,34 @@ log_validating = open(logs_dir+'/log_val','a')
 log_training.close()
 log_validating.close()
 
+#Parser
+def parse_args():
+    """
+    Parse input arguments
+    """
+    parser = argparse.ArgumentParser(description='Train a filter function network')
+    parser.add_argument('--dataset', dest='dataset',
+                        help='training dataset',
+                        default='pascal_voc', type=str)
+    parser.add_argument('--net', dest='net',
+                        help='vgg16, res101',
+                        default='vgg16', type=str)
+    parser.add_argument('--bs', dest='batch_size',
+                        help='batch_size',
+                        default=8, type=int)
+    parser.add_argument('--r', dest='resume',
+                        help='resume checkpoint or not',
+                        default=False, type=bool)
+    parser.add_argument('--checkpoint', dest='checkpoint',
+                        help='checkpoint path',
+                        default='./model.pth', type=str)
+    args = parser.parse_args()
+    return args
+
+args = parse_args()
+bs = args.batch_size
+res = args.resume
+
 # self defined classes
 from fcn_model import FCNs, VGGNet, weights_init_normal
 from data_loader import get_loader
@@ -90,7 +118,8 @@ model.apply(weights_init_normal)
 model.to(device)
 
 #model.load_state_dict(torch.load('models/fcn_baseline/epoch2iter9000val18.831.pth'))
-
+if res:
+    model.load_state_dict(torch.load(args.checkpoint))
 optimizerAll = optim.Adam(model.parameters(), lr=0.001, betas=(beta1, 0.999))
 
 MSELoss = nn.MSELoss()
@@ -125,7 +154,8 @@ for epoch in range(num_epochs):
         #loss_lab.backward()
         
         #optimizerD.step()
-        optimizerAll.step()
+        if (iters % bs == bs - 1):
+            optimizerAll.step()
         print(epoch, iters, loss_vec.item())
         log_training = open(logs_dir+'/log_train','a')
         log_training.write('{}  {}  {} \n'.format(epoch, iters, loss_vec.item()))
