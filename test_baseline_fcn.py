@@ -52,7 +52,10 @@ def parse_args():
                         default=False, type=bool)
     parser.add_argument('--checkpoint', dest='checkpoint',
                         help='checkpoint path',
-                        default='./model.pth', type=str)
+                        default='./model.pth', type=str)  
+    parser.add_argument('--lr', dest='lr',
+                        help='starting learning rate',
+                        default=0.001, type=float)
     args = parser.parse_args()
     return args
 
@@ -132,12 +135,13 @@ MSELoss = nn.MSELoss()
 loss_list = []
 
 ### TRAIN
-
+model.zero_grad()
 for epoch in range(num_epochs):
     # For each batch in the dataloader
     label_iter = iter(train_loader)
+    
     for iters in range(num_train_iter):
-        model.zero_grad()
+        
         #################################
         ########get labeled image:#######
         #################################
@@ -160,6 +164,7 @@ for epoch in range(num_epochs):
         #optimizerD.step()
         if (iters % bs == bs - 1):
             optimizerAll.step()
+            model.zero_grad()
         print(epoch, iters, loss_vec.item())
         log_training = open(logs_dir+'/log_train','a')
         log_training.write('{}  {}  {} \n'.format(epoch, iters, loss_vec.item()))
